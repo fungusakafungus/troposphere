@@ -46,6 +46,7 @@ class FakeAWSObject(AWSObject):
         'multilist': ([bool, int, float], False),
         'multituple': ((basestring, int), False),
         'helperfun': (positive_integer, False),
+        'stringproperty': (basestring, False),
     }
 
     def validate(self):
@@ -243,11 +244,54 @@ class TestDuplicate(unittest.TestCase):
 
 class TestRef(unittest.TestCase):
 
-    def test_ref(self):
-        param = Parameter("param", Description="description", Type="String")
-        t = Ref(param)
-        ref = json.loads(json.dumps(t, cls=awsencode))
-        self.assertEqual(ref['Ref'], 'param')
+    expected_template = {
+            'Parameters': {
+                'param': {
+                    'Type': 'String',
+                    'Description': 'description',
+                    }
+                },
+            'Resources': {
+                'fake': {
+                    'Type': 'Fake::AWS::Object',
+                    'Properties': {
+                        'stringproperty': {'Ref': 'param'}
+                        }
+                    }
+                }
+            }
+
+    def setUp(self):
+        self.t = Template()
+        self.param = Parameter("param", Description="description", Type="String")
+        self.t.add_parameter(self.param)
+
+    def test_ref_with_object(self):
+        fake = FakeAWSObject('fake', stringproperty=Ref(self.param))
+        self.t.add_resource(fake)
+
+        self.assertEqual(
+                json.dumps(self.expected_template),
+                json.dumps(json.loads(self.t.to_json()))
+                )
+
+    def test_ref_with_name(self):
+        fake = FakeAWSObject('fake', stringproperty=Ref('param'))
+        self.t.add_resource(fake)
+
+        self.assertEqual(
+                json.dumps(self.expected_template),
+                json.dumps(json.loads(self.t.to_json()))
+                )
+
+    def test_implicit_ref(self):
+        fake = FakeAWSObject('fake', stringproperty=self.param)
+        self.t.add_resource(fake)
+
+        self.assertEqual(
+                json.dumps(self.expected_template),
+                json.dumps(json.loads(self.t.to_json()))
+                )
 
 
 if __name__ == '__main__':
