@@ -1,7 +1,7 @@
 import json
 import unittest
 from troposphere import awsencode, AWSObject, Output, Parameter
-from troposphere import Template, Join
+from troposphere import Template, Join, AWSProperty, Ref
 
 
 def to_json(t, indent=4, sort_keys=True, separators=(', ', ': ')):
@@ -146,6 +146,29 @@ class TestImplicitRef(unittest.TestCase):
             }
         })
 
+    def test_implicit_ref_embedded_property(self):
+        t = Template()
+        r1 = FakeAWSObject('r1')
+        t.add_resource(r1)
+        embedded_property = FakeAWSProperty(prop1='value')
+        r2 = FakeAWSObject('r2', listproperty=[Ref(embedded_property)])
+        t.add_resource(r2)
+        self.assertJsonEquals(t, {
+            'Resources': {
+                'r1': {
+                    'Type': "Fake::AWS::Object",
+                },
+                'r2': {
+                    'Type': "Fake::AWS::Object",
+                    'Properties': {
+                        'listproperty': [{
+                            'prop1': 'value'
+                        }]
+                    }
+                },
+            }
+        })
+
 
 class FakeAWSObject(AWSObject):
     type = "Fake::AWS::Object"
@@ -153,6 +176,12 @@ class FakeAWSObject(AWSObject):
     props = {
         'prop1': (basestring, False),
         'listproperty': (list, False),
+    }
+
+class FakeAWSProperty(AWSProperty):
+
+    props = {
+        'prop1': (basestring, False),
     }
 
 
