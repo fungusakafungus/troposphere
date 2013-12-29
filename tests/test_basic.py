@@ -231,6 +231,25 @@ class TestProperty(unittest.TestCase):
             "tcp"
         )
 
+    def test_property_assignment(self):
+        class ResourceWithEmbeddedProp(AWSObject):
+            type = 'ResourceWithEmbeddedProp'
+            props = { 'rule': (SecurityGroupRule, False) }
+
+        rule = SecurityGroupRule(
+            IpProtocol="tcp",
+            FromPort="22",
+            ToPort="22",
+            CidrIp="0.0.0.0/0",
+        )
+        t = ResourceWithEmbeddedProp('fake', rule=rule)
+
+        d = json.loads(json.dumps(t, cls=awsencode))
+        self.assertEqual(
+            d['Properties']['rule']['IpProtocol'],
+            "tcp"
+        )
+
 
 class TestDuplicate(unittest.TestCase):
 
