@@ -216,6 +216,21 @@ class TestProperty(unittest.TestCase):
         with self.assertRaises(KeyError):
             d['Properties']
 
+    def test_property_in_a_resource(self):
+        p = SecurityGroupRule(
+            IpProtocol="tcp",
+            FromPort="22",
+            ToPort="22",
+            CidrIp="0.0.0.0/0",
+        )
+        t = FakeAWSObject('fake', singlelist=[p])
+
+        d = json.loads(json.dumps(t, cls=awsencode))
+        self.assertEqual(
+            d['Properties']['singlelist'][0]['IpProtocol'],
+            "tcp"
+        )
+
 
 class TestDuplicate(unittest.TestCase):
 
