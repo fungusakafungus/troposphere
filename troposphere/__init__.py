@@ -74,7 +74,7 @@ class BaseAWSObject(object):
                 return self.properties.__setitem__(name, value)
 
             # If the value is a BaseAWSObject, we have an implicit Ref()
-            elif isinstance(value, BaseAWSObject):
+            elif isinstance(value, (AWSObject, Parameter)):
                 return self.properties.__setitem__(name, Ref(value))
 
             # If it's a function, call it...
