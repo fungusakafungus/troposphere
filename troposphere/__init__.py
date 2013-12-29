@@ -380,7 +380,7 @@ def _resolve_references_dict(d):
 
 
 def _resolve_references_recursively(o):
-    if isinstance(o, (BaseAWSObject, Parameter)):
+    if isinstance(o, (AWSObject, Parameter)):
         r = Ref(o)
         return _resolve_references_recursively(r)
     if hasattr(o, "JSONrepr"):
