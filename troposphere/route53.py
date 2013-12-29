@@ -3,7 +3,7 @@
 #
 # See LICENSE file for full license.
 
-from . import AWSHelperFn, AWSObject
+from . import AWSHelperFn, AWSObject, AWSProperty
 from .validators import integer
 
 
@@ -18,7 +18,9 @@ class AliasTarget(AWSHelperFn):
         return self.data
 
 
-class BaseRecordSet(AWSObject):
+class RecordSet(AWSProperty):
+    # This is for use in a list with RecordSetGroup (below)
+#    dictname = 'Properties'
     props = {
         'AliasTarget': (AliasTarget, False),
         'Comment': (basestring, False),
@@ -34,16 +36,9 @@ class BaseRecordSet(AWSObject):
     }
 
 
-class RecordSetType(BaseRecordSet):
+class RecordSetType(RecordSet, AWSObject):
     # This is a top-level resource
     type = "AWS::Route53::RecordSet"
-
-
-class RecordSet(BaseRecordSet):
-    # This is for use in a list with RecordSetGroup (below)
-    def __init__(self, **kwargs):
-        sup = super(RecordSet, self)
-        sup.__init__(None, **kwargs)
 
 
 class RecordSetGroup(AWSObject):
